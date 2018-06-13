@@ -53,12 +53,12 @@ datH <- read.csv("z:\\data_repo\\field_data\\bewkes\\sensor\\campbell\\H_V.csv")
 datDT <- read.csv("z:\\data_repo\\field_data\\bewkes\\sensor\\campbell\\DG_dT.csv")
 datS <- read.csv("z:\\data_repo\\field_data\\bewkes\\sensor\\campbell\\sensorInfo.csv")
 }else{
-datA <- read.csv("/Volumes/data_repo/field_data/bewkes/sensor/campbell/A_mV.csv")
-datB <- read.csv("/Volumes/data_repo/field_data/bewkes/sensor/campbell/B_mV.csv")
-datC <- read.csv("/Volumes/data_repo/field_data/bewkes/sensor/campbell/C_mV.csv")
-datH <- read.csv("/Volumes/data_repo/field_data/bewkes/sensor/campbell/H_V.csv")
-datDT <- read.csv("/Volumes/data_repo/field_data/bewkes/sensor/campbell/DG_dT.csv")
-datS <- read.csv("/Volumes/data_repo/field_data/bewkes/sensor/campbell/sensorInfo.csv")
+datA <- read.csv("smb://geography~storage01.colgate.edu/data/data_repo/field_data/bewkes/sensor/campbell/A_mV.csv")
+datB <- read.csv("smb://geography~storage01.colgate.edu/data//data_repo/field_data/bewkes/sensor/campbell/B_mV.csv")
+datC <- read.csv("smb://geography~storage01.colgate.edu/data//data_repo/field_data/bewkes/sensor/campbell/C_mV.csv")
+datH <- read.csv("smb://geography~storage01.colgate.edu/data//data_repo/field_data/bewkes/sensor/campbell/H_V.csv")
+datDT <- read.csv("smb://geography~storage01.colgate.edu/data//data_repo/field_data/bewkes/sensor/campbell/DG_dT.csv")
+datS <- read.csv("smb://geography~storage01.colgate.edu/data//data_repo/field_data/bewkes/sensor/campbell/sensorInfo.csv")
 
 }
 ########################################
