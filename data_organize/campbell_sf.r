@@ -18,7 +18,7 @@ library(plyr)
 datDI <- "c:\\Users\\hkropp\\Google Drive\\bewkes_logger\\data\\campbell\\raw\\DGL"
 #sensor infor
 sensI <- read.csv("c:\\Users\\hkropp\\Google Drive\\bewkes_logger\\data\\campbell\\sensor\\sensorInfo.csv")
-#output directory
+#output dir
 outDI <-  c("c:\\Users\\hkropp\\Google Drive\\bewkes_logger\\sensor\\campbell",
 			"z:\\data_repo\\field_data\\bewkes\\sensor\\campbell")
 #list the files in the datalogger
@@ -79,7 +79,7 @@ hourD <- as.numeric(hoursD)+(as.numeric(minsD)/60)
 timeDF <- data.frame(doy=yday(dateSF),year=year(dateSF),hour=hourD)
 
 #variables of interest
-varI <- c("C_mV","B_mV","A_mV","H_V","DG_dT","DG_Pin")
+varI <- c("C_mV","B_mV","A_mV","H_V","DG_dT")
 
 #pull out variables of interest
 colN <- list()
@@ -107,6 +107,7 @@ for(i in 1:length(varI)){
 
 #write tables
 #output sensor info
+
 for(j in 1:length(outDI)){
 	write.table(sensSub, paste0(outDI[j],"\\sensorInfo.csv"), sep=",", row.names=FALSE)
 	for(i in 1:length(varI)){
