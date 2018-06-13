@@ -53,12 +53,12 @@ datH <- read.csv("z:\\data_repo\\field_data\\bewkes\\sensor\\campbell\\H_V.csv")
 datDT <- read.csv("z:\\data_repo\\field_data\\bewkes\\sensor\\campbell\\DG_dT.csv")
 datS <- read.csv("z:\\data_repo\\field_data\\bewkes\\sensor\\campbell\\sensorInfo.csv")
 }else{
-datA <- read.csv("/mnt/Volumes/data_repo/field_data/bewkes/sensor/campbell/A_mV.csv")
-datB <- read.csv("/mnt/Volumes/data_repo/field_data/bewkes/sensor/campbell/B_mV.csv")
-datC <- read.csv("/mnt/Volumes/data_repo/field_data/bewkes/sensor/campbell/C_mV.csv")
-datH <- read.csv("/mnt/Volumes/data_repo/field_data/bewkes/sensor/campbell/H_V.csv")
-datDT <- read.csv("/mnt/Volumes/data_repo/field_data/bewkes/sensor/campbell/DG_dT.csv")
-datS <- read.csv("/mnt/Volumes/data_repo/field_data/bewkes/sensor/campbell/sensorInfo.csv")
+datA <- read.csv("/Volumes/data/data_repo/field_data/bewkes/sensor/campbell/A_mV.csv")
+datB <- read.csv("/Volumes/data/data_repo/field_data/bewkes/sensor/campbell/B_mV.csv")
+datC <- read.csv("/Volumes/data/data_repo/field_data/bewkes/sensor/campbell/C_mV.csv")
+datH <- read.csv("/Volumes/data/data_repo/field_data/bewkes/sensor/campbell/H_V.csv")
+datDT <- read.csv("/Volumes/data/data_repo/field_data/bewkes/sensor/campbell/DG_dT.csv")
+datS <- read.csv("/Volumes/data/data_repo/field_data/bewkes/sensor/campbell/sensorInfo.csv")
 
 }
 ########################################
