@@ -13,6 +13,10 @@
 ### Input files from sensor output from campbell_sf.r  ###
 ### A_mv.csv,B_mv.csv,C_mV.csv, DG_dT.csv,H_V.csv      ###
 ##########################################################
+### Output files: sapflow in g/s: sapflowF             ###
+###              sensor data:   datS                   ###
+##########################################################
+##########################################################
 library(plyr)
 
 ########################################
@@ -36,7 +40,7 @@ flag.kshapp <- 1
 ### should be made. 1=make plot      ###
 ### 0= no plots                      ###
 ########################################
-flag.plot <- 1
+flag.plot <- 0
 
 ########################################
 ### read in data                     ###
@@ -189,3 +193,10 @@ if(flag.plot==1){
 	}
 	
 }
+
+
+########################################
+### prepare output                   ###
+########################################
+rm(list=setdiff(ls(), c("sapflowF","datS")))
+
