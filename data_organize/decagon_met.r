@@ -21,7 +21,7 @@ outDI <- c("c:\\Users\\hkropp\\Google Drive\\bewkes_logger\\sensor\\decagon",
 			"z:\\data_repo\\field_data\\bewkes\\sensor\\decagon")
 
 #list the files in the datalogger
-decF <-  list.files(paste0(datDI))
+decF <-  list.files(paste0(datDI),".csv")
 ########################################
 ### extract date from data file name ###
 ########################################
@@ -42,13 +42,27 @@ ddF <- (yday(DateF)/365)+year(DateF)
 #find the file with the latest date
 dfUse <- which(ddF==max(ddF))
 
+#file read in df
+files <- data.frame(path=decF,ddF=ddF)
+#sort so reading in from lowest to highest date
+files <- files[order(files$ddF),]
 ########################################
 ### read in data file                ###
 ########################################
-#data is appended
-decDat <- read.csv(paste0(datDI,"\\",decF[dfUse]), na.strings="#N/A", skip=5,header=FALSE)
+#need to append data
+
+
+dataF <- list()
+
+for(i in 1:dim(files)[1]){
+	dataF[[i]] <- read.csv(paste0(datDI,"\\",files$path[i]), na.strings="#N/A", skip=3,header=FALSE)
+}
+
+#turn into a dataframe
+decDat <- ldply(dataF,data.frame)
+
 #read in headers
-headDat <- read.csv(paste0(datDI,"\\",decF[dfUse]), nrows=4,stringsAsFactors=FALSE)
+headDat <- read.csv(paste0(datDI,"\\",decF[1]), nrows=3,stringsAsFactors=FALSE)
 #read in sensor info
 sensDat <- read.csv(paste0(sensDI,"\\sensor info.csv"))
 
