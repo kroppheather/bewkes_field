@@ -22,7 +22,7 @@ sensI <- read.csv("c:\\Users\\hkropp\\Google Drive\\bewkes_logger\\data\\campbel
 outDI <-  c("c:\\Users\\hkropp\\Google Drive\\bewkes_logger\\sensor\\campbell",
 			"z:\\data_repo\\field_data\\bewkes\\sensor\\campbell")
 #list the files in the datalogger
-sF <-  list.files(paste0(datDI))
+sF <-  list.files(paste0(datDI), ".dat")
 
 ########################################
 ### extract date from data file name ###
@@ -44,26 +44,24 @@ for(i in 1:length(sF)){
 dateF <- as.Date(paste0(monthF,"/",dayF,"/",yearF), "%m/%d/%y")
 #calculate decimal date
 ddF <- year(dateF)+(yday(dateF)/365)
-#file read in df
-files <- data.frame(path=sF,ddF=ddF)
-#sort so reading in from lowest to highest date
-files <- files[order(files$ddF),]
+
+
+
+#pull out most recent file
+dfUse <- which(ddF==max(ddF))
+
 
 ########################################
 ### read in data files               ###
 ########################################
-dataF <- list()
 
-for(i in 1:dim(files)[1]){
-	dataF[[i]] <- read.csv(paste0(datDI,"\\",files$path[i]), skip=4, na.strings="NAN",header=FALSE)
-}
 
-#turn into a dataframe
-sapflow <- ldply(dataF,data.frame)
+
+	sapflow <- read.csv(paste0(datDI,"\\",sF[dfUse]), skip=4, na.strings="NAN",header=FALSE)
 
 
 #read in header data
-headerF <- read.csv(paste0(datDI,"\\",files$path[i]), skip=1,nrows=3, na.strings="NAN",header=FALSE,stringsAsFactors=FALSE)
+headerF <- read.csv(paste0(datDI,"\\",sF[dfUse]), skip=1,nrows=3, na.strings="NAN",header=FALSE,stringsAsFactors=FALSE)
 #get header info
 headL <- gsub("\\(*\\d*\\)","",as.character(headerF[1,]))
 sensL <- as.numeric(gsub("\\D","",as.character(headerF[1,])))
