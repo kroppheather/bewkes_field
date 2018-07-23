@@ -187,7 +187,7 @@ if(flag.plot==1){
 	### make a plot of sapflowF for comp ###
 	for(i in 1:dim(datS)[1]){
 	jpeg(paste0(plotDI,"\\sapflow\\sapflow_sensor",i,".jpg"), width=750,height=500,quality=100)	
-		plot(sapflowF$doy+(sapflowF$hour/24),sapflowF[,i+3], type="l", xlab="doy",ylab="sapflow (g/s)", main=paste("sensor",i), ylim=c(-.1,30),
+		plot(sapflowF$doy+(sapflowF$hour/24),sapflowF[,i+3], type="l", xlab="doy",ylab="sapflow (g/s)", main=paste("sensor",i), ylim=c(-.1,75),
 				lwd=3)
 	dev.off()
 	}
