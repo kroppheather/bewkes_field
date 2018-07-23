@@ -62,7 +62,7 @@ for(i in 1:dim(files)[1]){
 decDat <- ldply(dataF,data.frame)
 
 #read in headers
-headDat <- read.csv(paste0(datDI,"\\",decF[1]), nrows=3,stringsAsFactors=FALSE)
+headDat <- read.csv(paste0(datDI,"\\",decF[3]), nrows=3,stringsAsFactors=FALSE)
 #read in sensor info
 sensDat <- read.csv(paste0(sensDI,"\\sensor info.csv"))
 
