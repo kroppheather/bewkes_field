@@ -40,7 +40,7 @@ flag.kshapp <- 1
 ### should be made. 1=make plot      ###
 ### 0= no plots                      ###
 ########################################
-flag.plot <- 0
+flag.plot <- 1
 
 ########################################
 ### read in data                     ###
