@@ -40,12 +40,10 @@ datLT <- read.csv("z:\\projects\\thermal_canopy\\bewkes\\leaf_temp\\subset_out\\
 
 datM <- read.csv("z:\\data_repo\\field_data\\bewkes\\sensor\\decagon\\met_air.csv")
 
+#######################################
+#####calculate half hour leaf temp##### 
+#######################################
 
-#######################################
-#####look at plots of sapflux and #####
-#####leaf temp vs air temp        #####
-#####to visualize raw data        ##### 
-#######################################
 
 #first aggregate the leaf temp so that they are averaged 
 #in the half hour of measurement
@@ -62,6 +60,11 @@ Ndays <- unique(sensorLT$doy)
 #calculate difference leaf - air
 sensorLT$leafD <- sensorLT$leafT-sensorLT$temp
 
+#######################################
+#####look at plots of sapflux and #####
+#####leaf temp vs air temp        #####
+#####to visualize raw data        ##### 
+#######################################
 for(i in 1:length(Ndays)){ 
 	for(j in 1:5){
 		jpeg(paste0(plotDI,"\\sapflux_temp_sensor",j,"_doy",Ndays[i],".jpg"), width=1000,
@@ -112,3 +115,64 @@ for(i in 1:length(Ndays)){
 #######################################
 #####covert sapflux data          ##### 
 #######################################
+
+##convert transpiration units ###
+#get the average area per leaf in cm2
+leafArea <- mean(datSLA$leaf.area.cm2/datSLA$leaf.number)
+
+
+#calculate sensor leaf area in m2
+#from average leaf area estimate and leaf counts
+datS$leafA.m2 <- (datS$leaf.count*leafArea)*(1/100)*(1/100)
+
+#calculate sapflow on the per area leaf basis
+#for transpiration
+#units of Ecanopy g m-2 s-1
+Ecanopy <- data.frame(sapflowF[,1:3])
+for(i in 1:dim(datS)[1]){
+
+	Ecanopy[,i+3] <- sapflowF[,i+3]/datS$leafA.m2[i]
+
+}
+
+
+
+#### water vapor calculations ####
+#calculate vapor pressure deficit
+  #making the functions
+e.sat <- function(Temp) { 0.611*exp((17.502*Temp)/(Temp+240.97)) }
+#rh in decimal form
+vpd <- function(esat,RH) {esat-((RH)*esat)}
+
+datM$e.sat <- e.sat(datM$temp)
+datM$vpd <- vpd(datM$e.sat,datM$rh)
+
+#Kg 
+kg.func <- function(Temp) {115.8 + (0.423*Temp)}
+
+datM$kg <- kg.func(datM$temp)
+
+#conversion of transpiration to kg m-2 s-1 from g
+Ecanopy.kg <- data.frame(Ecanopy[,1:3],Ecanopy[,4:(3+dim(datS)[1])]*(1/1000))
+
+
+#stomatal conductance (gs)
+gs.func<- function (Kg.coeff, Elkg, Vpd, P)
+{((Kg.coeff*Elkg)/ Vpd)*P}
+
+#join met to transpiration
+
+EcanopyMet <- join(Ecanopy.kg, datM, by=c("doy","year","hour"), type="left")
+
+#calculate gs
+gs.raw <- data.frame(EcanopyMet[,1:3])
+for(i in 1:dim(datS)[1]){
+	gs.raw[,i+3] <- gs.func(EcanopyMet[,3+i], EcanopyMet$kg, EcanopyMet$vpd, Ecanopy$press)
+
+}
+#convert to moles
+gs.mmol <- data.frame(EcanopyMet[,1:3])
+unit.conv<-function(gs,T,P){gs*.446*(273/(T+273))*(P/101.3)}
+for(i in 1:dim(datS)[1]){
+	gs.mmol[,i+3] <- unit.conv(gs.raw[,i+3], EcanopyMet$temp, EcanopyMet$press)
+}
