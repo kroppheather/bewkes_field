@@ -185,8 +185,8 @@ for(i in 1:dim(datS)[1]){
 }
 
 
+#make a df of gs and filter by quantile
 
-#### pair gs with leaf temp difference
 gsDF <- data.frame(doy=rep(gs.mmol[,1],times=5),year=rep(gs.mmol[,2],times=5),hour=rep(gs.mmol[,3],times=5),
 					gs=as.vector(data.matrix(gs.mmol[,4:8])), sensorID=rep(seq(1,5),each=dim(gs.mmol)[1]))
 gsDF <- na.omit(gsDF)					
@@ -194,39 +194,33 @@ quantile(gsDF$gs, .99)
 gsDF <- gsDF[gsDF$gs<=quantile(gsDF$gs, .99),]	
 				
 #join to leaf temp
-leafAll <- join(sensorLT, gsDF, by=c("hour","doy","sensorID"), type="left")
-leafAllm <- join(leafAll, datM, by=c("hour","doy"), type="left")
-leafAllm2 <- join(leafAllm,Edf, by=c("hour","doy","sensorID"), type="left")
-
-#######################################
-#####initial plots                ##### 
-#######################################
-
-plot(leafAllm2$leafT[leafAllm2$E>0&leafAllm2$sensorID==1],leafAllm2$E[leafAllm2$E>0&leafAllm2$sensorID==1],pch=19)
-plot(leafAllm2$leafD[leafAllm2$E>0&leafAllm2$sensorID==1],leafAllm2$E[leafAllm2$E>0&leafAllm2$sensorID==1],pch=19)
-plot(leafAllm2$leafD[leafAllm2$E>0&leafAllm2$sensorID==2],leafAllm2$E[leafAllm2$E>0&leafAllm2$sensorID==2],pch=19)
-plot(leafAllm2$leafD[leafAllm2$E>0&leafAllm2$sensorID==3],leafAllm2$E[leafAllm2$E>0&leafAllm2$sensorID==3],pch=19)
-plot(leafAllm2$leafD[leafAllm2$E>0&leafAllm2$sensorID==4],leafAllm2$E[leafAllm2$E>0&leafAllm2$sensorID==4],pch=19)
-plot(leafAllm2$leafD[leafAllm2$E>0&leafAllm2$sensorID==5],leafAllm2$E[leafAllm2$E>0&leafAllm2$sensorID==5],pch=19)
-
-plot(leafAllm2$vpd,leafAllm2$leafD,pch=19)
-plot(leafAllm2$vpd[leafAllm2$doy==199],leafAllm2$leafD[leafAllm2$doy==199],pch=19)
-plot(leafAllm2$vpd[leafAllm2$doy==207],leafAllm2$leafD[leafAllm2$doy==207],pch=19)
-
-
-plot(leafAllm$vpd,leafAllm$leafD,pch=19)
-plot(leafAllm$vpd[leafAllm$doy==199],leafAllm$leafD[leafAllm$doy==199],pch=19)
-plot(leafAllm$vpd[leafAllm$doy==207],leafAllm$leafD[leafAllm$doy==207],pch=19)
-plot(leafAllm$gs[leafAllm$doy==199],leafAllm$leafD[leafAllm$doy==199],pch=19)
-plot(leafAllm$gs[leafAllm$doy==207],leafAllm$leafD[leafAllm$doy==207],pch=19)
+leafAll <- join(sensorLT, gsDF, by=c("hour","doy","sensorID"), type="inner")
+leafAllm <- join(leafAll, datM, by=c("hour","doy"), type="inner")
+leafAllm2 <- join(leafAllm,Edf, by=c("hour","doy","sensorID"), type="inner")
 
 #join met data to gs and E
 
 gsDFall <- join(gsDF, datM, by=c("hour","doy"), type="left")
 Eall <- join(Edf, datM, by=c("hour","doy"), type="left")
 
-plot(gsDFall$vpd[gsDFall$gs>0&gsDFall$doy==199],gsDFall$gs[gsDFall$gs>0&gsDFall$doy==199],pch=19)
-plot(gsDFall$vpd[gsDFall$gs>0&gsDFall$doy==207],gsDFall$gs[gsDFall$gs>0&gsDFall$doy==207],pch=19)
+#also look at averages across all sensors
+gsLAve <- aggregate(leafAllm2$gs,by=list(leafAllm2$hour,leafAllm2$doy),FUN="mean")
+colnames(gsLAve) <- c("hour","doy","gs")
+eLAve <- aggregate(leafAllm2$E,by=list(leafAllm2$hour,leafAllm2$doy),FUN="mean")
+colnames(eLAve) <- c("hour","doy","E")
+ldLAve<- aggregate(leafAllm2$leafD,by=list(leafAllm2$hour,leafAllm2$doy),FUN="mean")
+colnames(ldLAve) <- c("hour","doy","ld")
+
+vLAve<- aggregate(leafAllm2$vpd,by=list(leafAllm2$hour,leafAllm2$doy),FUN="mean")
+colnames(vLAve) <- c("hour","doy","vpd")
+
+
+aveAll <- data.frame(gsLAve,E=eLAve$E,ld=ldLAve$ld,vpd=vLAve$vpd)
+aveAll <- aveAll[aveAll$gs>0,]
+
+plot(aveAll$vpd,aveAll$ld)
+plot(aveAll$vpd,aveAll$gs)
+plot(aveAll$ld,aveAll$gs)
 
 #######################################
 #####sensor diurnal plots         ##### 
@@ -283,4 +277,139 @@ for(j in 1:length(Ndays)){
 	}
 }
 
+#######################################
+#####plot of all measurements     ##### 
+#######################################
+hd <- 40
+wd <- 40
 
+sensorA <- leafAllm2[leafAllm2$gs>0,]
+
+colj <- c("cornflowerblue","coral2")
+px <- 5
+mx <- 3
+lx <- 3
+lnn <- 5 
+llx <- 4
+llnn <- 13
+
+jpeg(paste0(plotDI,"\\sensor_comp\\comp_sensor.jpg"), width=4000,height=2000, quality=100)
+		layout(matrix(seq(1,3), ncol=3), width=rep(lcm(wd),3), height=rep(lcm(hd),3))
+		
+		#plot of all leaf temp difference and D
+		par(mai=c(2,2,2,2))
+		plot(c(0,1),c(0,1), ylim=c(-5,10), xlim=c(0,2),type="n", axes=FALSE,
+			xaxs="i",yaxs="i", xlab=" ",ylab=" ")
+		for(j in 1:length(Ndays)){
+		points(leafAllm2$vpd[leafAllm2$doy==Ndays[j]],leafAllm2$leafD[leafAllm2$doy==Ndays[j]], col=colj[j],
+				cex=px, pch=19)
+		}
+		axis(1, seq(0,2, by=.5), rep("", length(seq(0,2, by=.5))), lwd.ticks=lx)
+		mtext(seq(0,2, by=.5), at=seq(0,2, by=.5), side=1,line=lnn, cex=mx)
+		axis(2, seq(-5,10, by=5), rep("", length(seq(-5,10, by=5))), lwd.ticks=lx)
+		mtext(seq(-5,10, by=5), at=seq(-5,10, by=5), side=2,line=lnn, cex=mx,las=2)
+		mtext("vapor pressure deficit",side=1,line=llnn,cex=llx)
+		mtext("leaf-air temperature",side=2,line=llnn,cex=llx)
+		#plot of all gs and D
+		par(mai=c(2,2,2,2))
+		plot(c(0,1),c(0,1), ylim=c(0,450), xlim=c(0,2),type="n", axes=FALSE,
+			xaxs="i",yaxs="i", xlab=" ",ylab=" ")	
+		for(j in 1:length(Ndays)){
+			points(gsDFall$vpd[gsDFall$doy==Ndays[j]&gsDFall$gs>0],gsDFall$gs[gsDFall$doy==Ndays[j]&gsDFall$gs>0],
+				col=colj[j],cex=px,pch=19)
+		}
+		axis(1, seq(0,2, by=.5), rep("", length(seq(0,2, by=.5))), lwd.ticks=lx)
+		mtext(seq(0,2, by=.5), at=seq(0,2, by=.5), side=1,line=lnn, cex=mx)
+		axis(2, seq(0,400, by=100), rep("", length(seq(0,400, by=100))), lwd.ticks=lx)
+		mtext(seq(0,400, by=100), at=seq(0,400, by=100), side=2,line=lnn, cex=mx,las=2)		
+		mtext("vapor pressure deficit",side=1,line=llnn,cex=llx)
+		mtext("canopy stomatal conductance",side=2,line=llnn,cex=llx)
+		#plot of all leaf temp difference and gs
+		par(mai=c(2,2,2,2))
+		plot(c(0,1),c(0,1), xlim=c(-5,10), ylim=c(0,500),type="n", axes=FALSE,
+			xaxs="i",yaxs="i", xlab=" ",ylab=" ")	
+		for(j in 1:length(Ndays)){
+			points(sensorA$leafD[sensorA$doy==Ndays[j]],sensorA$gs[sensorA$doy==Ndays[j]],
+			col=colj[j],cex=px,pch=19)
+		}
+		
+		axis(2, seq(0,400, by=100), rep("", length(seq(0,400, by=100))), lwd.ticks=lx)
+		mtext(seq(0,400, by=100), at=seq(0,400, by=100), side=2,line=lnn, cex=mx,las=2)			
+		
+		axis(1, seq(-5,10, by=5), rep("", length(seq(-5,10, by=5))), lwd.ticks=lx)
+		mtext(seq(-5,10, by=5), at=seq(-5,10, by=5), side=1,line=lnn, cex=mx)
+		mtext("leaf-air temperature",side=1,line=llnn,cex=llx)
+		mtext("canopy stomatal conductance",side=2,line=llnn,cex=llx)		
+dev.off()
+
+summary(lm(sensorA$gs~sensorA$leafD))
+
+
+#######################################
+#####sensor mean plot             ##### 
+#######################################
+
+#exclude gs below 0.6 vpd
+aveAllD <- aveAll[aveAll$vpd>=0.6,]
+
+
+hd <- 40
+wd <- 40
+colj <- c("cornflowerblue","coral2")
+px <- 5
+mx <- 3
+lx <- 3
+lnn <- 5 
+llx <- 4
+llnn <- 13
+
+jpeg(paste0(plotDI,"\\sensor_comp\\comp_average.jpg"), width=4000,height=2000, quality=100)
+	layout(matrix(seq(1,3), ncol=3), width=rep(lcm(wd),3), height=rep(lcm(hd),3))
+		#plot of all leaf temp difference and D
+		par(mai=c(2,2,2,2))
+		plot(c(0,1),c(0,1), ylim=c(-5,10), xlim=c(0,2),type="n", axes=FALSE,
+			xaxs="i",yaxs="i", xlab=" ",ylab=" ")
+		for(j in 1:length(Ndays)){
+			points(aveAll$vpd[aveAll$doy==Ndays[j]],aveAll$ld[aveAll$doy==Ndays[j]],
+			col=colj[j],cex=px,pch=19)
+		}
+		axis(1, seq(0,2, by=.5), rep("", length(seq(0,2, by=.5))), lwd.ticks=lx)
+		mtext(seq(0,2, by=.5), at=seq(0,2, by=.5), side=1,line=lnn, cex=mx)
+		axis(2, seq(-5,10, by=5), rep("", length(seq(-5,10, by=5))), lwd.ticks=lx)
+		mtext(seq(-5,10, by=5), at=seq(-5,10, by=5), side=2,line=lnn, cex=mx,las=2)
+		mtext("vapor pressure deficit",side=1,line=llnn,cex=llx)
+		mtext("leaf-air temperature",side=2,line=llnn,cex=llx)
+		
+		#plot of all gs and D
+		par(mai=c(2,2,2,2))
+		plot(c(0,1),c(0,1), ylim=c(0,450), xlim=c(0,2),type="n", axes=FALSE,
+			xaxs="i",yaxs="i", xlab=" ",ylab=" ")	
+		for(j in 1:length(Ndays)){
+			points(aveAllD$vpd[aveAll$doy==Ndays[j]],aveAllD$gs[aveAll$doy==Ndays[j]],
+			col=colj[j],cex=px,pch=19)
+		}	
+		axis(1, seq(0,2, by=.5), rep("", length(seq(0,2, by=.5))), lwd.ticks=lx)
+		mtext(seq(0,2, by=.5), at=seq(0,2, by=.5), side=1,line=lnn, cex=mx)
+		axis(2, seq(0,400, by=100), rep("", length(seq(0,400, by=100))), lwd.ticks=lx)
+		mtext(seq(0,400, by=100), at=seq(0,400, by=100), side=2,line=lnn, cex=mx,las=2)		
+		mtext("vapor pressure deficit",side=1,line=llnn,cex=llx)
+		mtext("canopy stomatal conductance",side=2,line=llnn,cex=llx)		
+		#plot of all leaf temp difference and gs
+		par(mai=c(2,2,2,2))
+		plot(c(0,1),c(0,1), xlim=c(-5,10), ylim=c(0,500),type="n", axes=FALSE,
+			xaxs="i",yaxs="i", xlab=" ",ylab=" ")		
+		for(j in 1:length(Ndays)){
+			points(aveAllD$ld[aveAll$doy==Ndays[j]],aveAllD$gs[aveAll$doy==Ndays[j]],
+			col=colj[j],cex=px,pch=19)
+		}
+		axis(2, seq(0,400, by=100), rep("", length(seq(0,400, by=100))), lwd.ticks=lx)
+		mtext(seq(0,400, by=100), at=seq(0,400, by=100), side=2,line=lnn, cex=mx,las=2)			
+		
+		axis(1, seq(-5,10, by=5), rep("", length(seq(-5,10, by=5))), lwd.ticks=lx)
+		mtext(seq(-5,10, by=5), at=seq(-5,10, by=5), side=1,line=lnn, cex=mx)
+		mtext("leaf-air temperature",side=1,line=llnn,cex=llx)
+		mtext("canopy stomatal conductance",side=2,line=llnn,cex=llx)			
+		legend("topleft", paste(Ndays), col=colj,pch=19,cex=4,bty="n")
+dev.off()	
+
+summary(lm(aveAllD$gs~aveAllD$ld))		
