@@ -53,22 +53,33 @@ files <- files[order(files$ddF),]
 
 
 dataF <- list()
+headDat <- list()
 
 for(i in 1:dim(files)[1]){
 	dataF[[i]] <- read.csv(paste0(datDI,"\\",files$path[i]), na.strings="#N/A", skip=3,header=FALSE)
-}
+	#read in headers
+	headDat[[i]] <- read.csv(paste0(datDI,"\\",decF[i]), nrows=3,stringsAsFactors=FALSE,header=FALSE)
+	colnames(dataF[[i]])[1] <- "timestamp"
+	colnames(dataF[[i]])[2:dim(dataF[[i]])[2]] <- 
+			paste0(headDat[[i]][2,2:dim(dataF[[i]])[2]],headDat[[i]][3,2:dim(dataF[[i]])[2]])
+	}
 
 #turn into a dataframe
 decDat <- ldply(dataF,data.frame)
 
-#read in headers
-headDat <- read.csv(paste0(datDI,"\\",decF[3]), nrows=3,stringsAsFactors=FALSE)
+
+
 #read in sensor info
 sensDat <- read.csv(paste0(sensDI,"\\sensor info.csv"))
+sensDat$lname <- gsub("X","",gsub("\\d","",gsub("\\W","",paste0(sensDat$sensorType,sensDat$name))))
 
 #join header to proper name
-headerN <- data.frame(name=as.character(headDat[2,]))
-headerN <- join(headerN, sensDat, by="name", type="left")
+headerN <- data.frame(lname= gsub("X","",gsub("\\d","",gsub("\\W","",colnames(decDat)))))
+headerN <- join(headerN, sensDat, by="lname", type="left")
+headerN$sensN <- rep(0,dim(headerN)[1])
+headerN$sensN[headerN$sensor=="TEROS 12 Moisture/Temp/EC"&is.na(headerN$sensor)==FALSE] <- rep(seq(1,3),each=3)
+
+ 
 
 ########################################
 ### organize data                    ###
@@ -76,7 +87,7 @@ headerN <- join(headerN, sensDat, by="name", type="left")
 
 ###pull out timestamp info###
 
-dateDec <- decDat[,which(headerN$ID=="timestamp")]
+dateDec <- decDat[,which(headerN$lname=="timestamp")]
 #get date format
 dateDecD <- as.Date(dateDec, "%m/%d/%Y %H:%M")
 
@@ -92,6 +103,7 @@ timeDat <- data.frame(doy=yday(dateDecD),year=year(dateDecD), hour=hourD)
 types <- as.character(unique(headerN$output.group))
 types <- types[types!="time"]
 types <- types[types!="none"]
+types <- types[is.na(types)==FALSE]
 
 #create a list of the data
 colsT <- list()
@@ -107,7 +119,7 @@ for(i in 1:length(types)){
 	dataT[[i]] <- data.frame(decDat[,colsT[[i]]])
 	colnames(dataT[[i]]) <- headerN$ID[colsT[[i]]]
 	dataT[[i]] <- data.frame(timeDat,dataT[[i]])
-	sensorT[[i]] <- data.frame(headerN[colsT[[i]],2:5])
+	sensorT[[i]] <- data.frame(headerN[colsT[[i]],2:5],sensorID=headerN[colsT[[i]],9])
 }
 
 #output data
