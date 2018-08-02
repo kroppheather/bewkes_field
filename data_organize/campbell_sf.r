@@ -45,26 +45,51 @@ dateF <- as.Date(paste0(monthF,"/",dayF,"/",yearF), "%m/%d/%y")
 #calculate decimal date
 ddF <- year(dateF)+(yday(dateF)/365)
 
+#df 
+dfFiles <- data.frame(filename=sF,date=ddF)
+#order files by date
+dfFiles <- dfFiles[order(dfFiles$date),]
 
-
-#pull out most recent file
-dfUse <- which(ddF==max(ddF))
 
 
 ########################################
 ### read in data files               ###
 ########################################
-
-
-
-	sapflow <- read.csv(paste0(datDI,"\\",sF[dfUse]), skip=4, na.strings="NAN",header=FALSE)
-
-
 #read in header data
-headerF <- read.csv(paste0(datDI,"\\",sF[dfUse]), skip=1,nrows=3, na.strings="NAN",header=FALSE,stringsAsFactors=FALSE)
+headerF <- read.csv(paste0(datDI,"\\",dfFiles$filename[1]), skip=1,nrows=3, na.strings="NAN",header=FALSE,stringsAsFactors=FALSE)
 #get header info
 headL <- gsub("\\(*\\d*\\)","",as.character(headerF[1,]))
 sensL <- as.numeric(gsub("\\D","",as.character(headerF[1,])))
+#read in sapflow data files
+sapflowL <- list()
+endL <- numeric(0)
+for(i in 1:dim(dfFiles)[1]){
+
+	sapflowL[[i]] <- read.csv(paste0(datDI,"\\",dfFiles$filename[i]), skip=4, na.strings="NAN",header=FALSE)
+
+	#pull out last record number at end of the file
+	endL[i] <- sapflowL[[i]][dim(sapflowL[[i]])[1],2]
+	
+}
+
+#generate starting values
+startL <- c(0)
+for(i in 1:dim(dfFiles)[1]-1){
+	startL <-append(startL, endL[i]+1) 
+}
+
+#subset sapflow to only be in the time period of data collection
+
+subE <- numeric(0)
+subS <- numeric(0)
+sapflowS <- list()
+for(i in 1:dim(dfFiles)[1]){
+	subS[i] <- which(sapflowL[[i]][,2]==startL[i])
+	subE[i] <- which(sapflowL[[i]][,2]==endL[i])
+	sapflowS[[i]] <- sapflowL[[i]][subS[i]:subE[i],]
+}
+
+sapflow <- ldply(sapflowS,data.frame)
 
 colnames(sapflow) <- headL
 #convert time
