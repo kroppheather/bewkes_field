@@ -43,7 +43,7 @@ datM <- read.csv("z:\\data_repo\\field_data\\bewkes\\sensor\\decagon\\met_air.cs
 #######################################
 #####calculate half hour leaf temp##### 
 #######################################
-
+datLT <- datLT[datLT$water=="N",]
 
 #first aggregate the leaf temp so that they are averaged 
 #in the half hour of measurement
@@ -285,7 +285,7 @@ wd <- 40
 
 sensorA <- leafAllm2[leafAllm2$gs>0,]
 
-colj <- c("cornflowerblue","coral2")
+colj <- c("cornflowerblue","coral2","darkgoldenrod1")
 px <- 5
 mx <- 3
 lx <- 3
@@ -355,7 +355,7 @@ aveAllD <- aveAll[aveAll$vpd>=0.6,]
 
 hd <- 40
 wd <- 40
-colj <- c("cornflowerblue","coral2")
+colj <- c("cornflowerblue","coral2","darkgoldenrod1")
 px <- 5
 mx <- 3
 lx <- 3
@@ -412,4 +412,6 @@ jpeg(paste0(plotDI,"\\sensor_comp\\comp_average.jpg"), width=4000,height=2000, q
 		legend("topleft", paste(Ndays), col=colj,pch=19,cex=4,bty="n")
 dev.off()	
 
-summary(lm(aveAllD$gs~aveAllD$ld))		
+summary(lm(aveAllD$gs[aveAllD$doy==199]~aveAllD$ld[aveAllD$doy==199]))	
+summary(lm(aveAllD$gs[aveAllD$doy==207]~aveAllD$ld[aveAllD$doy==207]))
+	
