@@ -415,3 +415,48 @@ dev.off()
 summary(lm(aveAllD$gs[aveAllD$doy==199]~aveAllD$ld[aveAllD$doy==199]))	
 summary(lm(aveAllD$gs[aveAllD$doy==207]~aveAllD$ld[aveAllD$doy==207]))
 	
+	
+	
+
+
+#######################################
+#####sensor mean plot just temp   ##### 
+#######################################
+
+#exclude gs below 0.6 vpd
+aveAllD <- aveAll[aveAll$vpd>=0.6,]
+
+
+
+fitT <- lm(aveAllD$gs[aveAllD$doy==207]~aveAllD$ld[aveAllD$doy==207])
+
+hd <- 40
+wd <- 40
+colj <- "black"
+px <- 5
+mx <- 4
+lx <- 4
+lnn <- 4 
+llx <- 6
+llnn <- 13
+
+jpeg(paste0(plotDI,"\\sensor_comp\\gc_temp.jpg"), width=2000,height=2000, quality=100)
+
+		#plot of all leaf temp difference and gs
+		layout(matrix(c(1), ncol=1), width=rep(lcm(wd),1), height=rep(lcm(hd),1))
+		par(mai=c(0,0,0,0))
+		plot(c(0,1),c(0,1), xlim=c(0,8), ylim=c(0,300),type="n", axes=FALSE,
+			xaxs="i",yaxs="i", xlab=" ",ylab=" ")		
+
+			points(aveAllD$ld[aveAll$doy==207],aveAllD$gs[aveAll$doy==207],
+			col=colj,cex=px,pch=19)
+			abline(fitT, lwd=4, lty=2,col="cornflowerblue")
+		axis(2, seq(0,300, by=50), rep("", length(seq(0,300, by=50))), lwd.ticks=lx)
+		mtext(seq(0,300, by=50), at=seq(0,300, by=50), side=2,line=lnn, cex=mx,las=2)			
+		
+		axis(1, seq(0,8, by=1), rep("", length(seq(0,8, by=1))), lwd.ticks=lx)
+		mtext(seq(0,8, by=1), at=seq(0,8, by=1), side=1,line=lnn, cex=mx)
+		mtext("leaf-air temperature (C)",side=1,line=llnn,cex=llx)
+		mtext(expression(paste("canopy stomatal conductance (mmol m" ^"-2","s"^"-1",")")),side=2,line=llnn,cex=llx)			
+
+dev.off()		
